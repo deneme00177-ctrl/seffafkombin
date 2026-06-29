@@ -530,22 +530,29 @@
         </div>
     </section>
 
-    <section id="reviews-section" class="py-12 bg-gray-50 border-t border-b border-gray-200">
-        <div class="px-4 md:px-10 max-w-7xl mx-auto">
+<section id="reviews-section" class="py-12 bg-[#efeae2] border-t border-b border-gray-200 relative overflow-hidden" style="display: none;">
+        <div class="absolute inset-0 opacity-10" style="background-image: url('https://w0.peakpx.com/wallpaper/818/148/HD-wallpaper-whatsapp-background-solid-color-texture-whatsapp-pattern-thumbnail.jpg'); background-size: cover; mix-blend-mode: multiply;"></div>
+        
+        <div class="px-4 md:px-10 max-w-7xl mx-auto relative z-10">
             <div class="text-center mb-8">
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Müşterilerimiz Neler Söylüyor?</h2>
-                <div class="flex justify-center items-center gap-2 text-brand-500">
-                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    <span id="average-rating-display" class="text-gray-600 font-medium text-sm ml-2">5.0/5 Ortalama Puan</span>
-                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-[#25D366] text-3xl"></i> Sizden Gelenler
+                </h2>
+                <p class="text-sm text-gray-600 font-medium">Müşterilerimizin memnuniyet mesajları.</p>
             </div>
 
-            <div class="swiper testimonial-swiper pb-10">
+            <div class="swiper whatsapp-swiper pb-12">
                 <div class="swiper-wrapper" id="reviews-wrapper">
-                    </div>
+                    <!-- Firebase'den gelen veriler buraya basılacak -->
+                </div>
                 <div class="swiper-pagination mt-2"></div>
             </div>
         </div>
+    </section>
+	<section id="whatsapp-reviews-section" class="py-12 bg-[#efeae2] border-t border-b border-gray-200 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: url('https://w0.peakpx.com/wallpaper/818/148/HD-wallpaper-whatsapp-background-solid-color-texture-whatsapp-pattern-thumbnail.jpg'); background-size: cover; mix-blend-mode: multiply;"></div>
+        
+
     </section>
     <section id="order-section" class="py-5 px-4 md:px-10 bg-gray-50 hidden">
         <div class="max-w-7xl mx-auto">
@@ -1175,11 +1182,12 @@ if (settings.heroImage) {
       }
     }
 
-    async function loadReviews() {
+async function loadReviews() {
         try {
             const reviewsRef = collection(db, "reviews");
             const querySnapshot = await getDocs(reviewsRef);
             const wrapper = document.getElementById('reviews-wrapper');
+            const section = document.getElementById('reviews-section');
             let html = '';
             let hasReviews = false;
 
@@ -1187,46 +1195,48 @@ if (settings.heroImage) {
             querySnapshot.forEach(doc => {
                 const data = doc.data();
                 if(data.aktif) {
-                    reviewsData.push({ id: doc.id, ...data, tarih: data.eklenmeTarihi ? data.eklenmeTarihi.toDate() : new Date(0) });
+                    reviewsData.push({ id: doc.id, ...data, tarih: data.eklenmeTarihi ? data.eklenmeTarihi.toDate() : new Date() });
                 }
             });
 
-            // En yeni eklenen en üstte çıksın diye sıralıyoruz
+            // En yeni eklenen en üstte çıksın
             reviewsData.sort((a,b) => b.tarih - a.tarih); 
 
-            reviewsData.forEach(r => {
+            reviewsData.forEach((r, index) => {
                 hasReviews = true;
-                const avatar = r.avatar || 'https://via.placeholder.com/150';
-                const rating = r.rating || 5;
-                const starFull = '<i class="fa-solid fa-star"></i>';
-                const starHalf = '<i class="fa-solid fa-star-half-stroke"></i>';
-                const starEmpty = '<i class="fa-regular fa-star"></i>';
                 
-                let starsHtml = '';
-                for(let i=1; i<=5; i++) {
-                    if(rating >= i) starsHtml += starFull;
-                    else if(rating >= i - 0.5) starsHtml += starHalf;
-                    else starsHtml += starEmpty;
-                }
+                // Sahte görünümü engellemek için kritik nokta:
+                // Avatar linki boşsa veya placeholder ise resmi hiç gösterme. Sadece metin balonu olsun.
+                const isPlaceholder = r.avatar && (r.avatar.includes('ui-avatars.com') || r.avatar.includes('via.placeholder.com') || r.avatar.trim() === '');
+                const hasImage = r.avatar && !isPlaceholder;
+                
+                const imgHtml = hasImage ? `<img src="${r.avatar}" alt="Müşteri Görseli" class="w-full h-48 object-cover rounded-xl mb-2 border border-gray-100">` : '';
+                
+                // Saati Firebase'e kayıt saatinden alıyoruz
+                const hours = r.tarih.getHours().toString().padStart(2, '0');
+                const minutes = r.tarih.getMinutes().toString().padStart(2, '0');
+                const timeString = `${hours}:${minutes}`;
+
+                // Tik rengini dinamik yapıyoruz (Hepsi mavi olursa yapay durur. %80 mavi, %20 gri tik atarız)
+                const isBlueTick = Math.random() > 0.2;
+                const tickClass = isBlueTick ? 'text-[#53bdeb]' : 'text-gray-400';
+
+                // Müşteri adını grup sohbeti mantığıyla üste yazıyoruz ki sosyal kanıtı kaybetmeyelim
+                const nameHtml = `<div class="text-[11px] font-bold text-[#075e54] mb-1">${r.isim || 'Müşteri'}</div>`;
+
+                // Kartları aralıklı göstermek için index'e göre margin-top (mt-8) veriyoruz
+                const mtClass = index % 2 !== 0 ? 'mt-8' : '';
 
                 html += `
-                <div class="swiper-slide h-auto">
-                    <div class="bg-white h-full p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col transition hover:shadow-md hover:border-brand-200">
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="${avatar}" alt="${r.isim}" class="w-12 h-12 rounded-full object-cover border-2 border-brand-100" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(r.isim)}&background=random'">
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">${r.isim}</h4>
-                                <div class="flex text-yellow-400 text-xs">
-                                    ${starsHtml}
-                                </div>
+                <div class="swiper-slide">
+                    <div class="max-w-[280px] mx-auto md:mx-0 ${mtClass}">
+                        <div class="bg-white p-2.5 rounded-2xl rounded-tl-none shadow-sm relative">
+                            ${nameHtml}
+                            ${imgHtml}
+                            <p class="text-[13px] text-gray-800 leading-snug px-1">${r.metin}</p>
+                            <div class="text-[10px] text-gray-400 text-right mt-1 flex justify-end items-center gap-1">
+                                ${timeString} <i class="fa-solid fa-check-double ${tickClass} text-[11px]"></i>
                             </div>
-                            <i class="fa-solid fa-quote-right text-3xl text-gray-100 ml-auto"></i>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed flex-1">
-                            ${r.metin}
-                        </p>
-                        <div class="mt-4 text-xs text-green-600 font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-circle-check"></i> Doğrulanmış Alıcı
                         </div>
                     </div>
                 </div>
@@ -1235,27 +1245,24 @@ if (settings.heroImage) {
 
             if(hasReviews) {
                 wrapper.innerHTML = html;
+                section.style.display = 'block';
                 
-                // Ortalama Puan Hesaplaması
-                const avgRating = (reviewsData.reduce((acc, curr) => acc + (curr.rating || 5), 0) / reviewsData.length).toFixed(1);
-                const avgRatingEl = document.getElementById('average-rating-display');
-                if(avgRatingEl) avgRatingEl.textContent = avgRating + '/5 Ortalama Puan';
-
-                // Yorumlar html içine yerleştikten hemen sonra Swiper'ı başlat
-                new Swiper('.testimonial-swiper', {
-                    slidesPerView: 1,
-                    spaceBetween: 20,
-                    loop: reviewsData.length > 1, // Tek yorum varsa hata vermesin diye loop kapatıyoruz
-                    autoplay: { delay: 4000, disableOnInteraction: false },
-                    pagination: { el: '.testimonial-swiper .swiper-pagination', clickable: true },
+                // WhatsApp yapısı için Swiper başlatıcısı
+                new Swiper('.whatsapp-swiper', {
+                    slidesPerView: 1.2,
+                    spaceBetween: 15,
+                    loop: reviewsData.length > 1,
+                    autoplay: { delay: 3500, disableOnInteraction: false },
+                    pagination: { el: '.whatsapp-swiper .swiper-pagination', clickable: true },
                     breakpoints: {
-                        640: { slidesPerView: 2 },
-                        1024: { slidesPerView: Math.min(3, reviewsData.length) }
+                        640: { slidesPerView: 2.2 },
+                        768: { slidesPerView: 3 },
+                        1024: { slidesPerView: 4 }
                     }
                 });
             } else {
-                // Eğer hiç yorum yoksa yorumlar bölümünü tamamen gizle
-                document.getElementById('reviews-section').style.display = 'none';
+                // Yorum yoksa section'ı tamamen gizle
+                section.style.display = 'none';
             }
 
         } catch (error) {
@@ -1724,6 +1731,20 @@ let variantSelectorsHTML = '';
       }
     });
 
+// WhatsApp Yorumları için Swiper Başlatıcısı
+      new Swiper('.whatsapp-swiper', {
+          slidesPerView: 1.2, // Mobilde 1 kart tam, 2. kartın ucu gözüksün (kaydırmaya teşvik eder)
+          spaceBetween: 15,
+          centeredSlides: false,
+          loop: true,
+          autoplay: { delay: 3500, disableOnInteraction: false },
+          pagination: { el: '.whatsapp-swiper .swiper-pagination', clickable: true },
+          breakpoints: {
+              640: { slidesPerView: 2.2 },
+              768: { slidesPerView: 3 },
+              1024: { slidesPerView: 4 }
+          }
+      });
     // Ana sistemi başlat
     initSystem();
 
