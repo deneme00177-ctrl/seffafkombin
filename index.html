@@ -6,7 +6,7 @@
   <title id="pageTitle">Kampanya Fırsatı</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -29,7 +29,7 @@
       }
     }
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
@@ -53,14 +53,14 @@
 
     // 2. DİNAMİK ID ÇEKME VE BAŞLATMA İŞLEMİ
     let FB_PIXEL_ID = ''; 
-    window.TT_PIXEL_ID = 'D915NBJC77U49J863MA0';
+    window.TT_PIXEL_ID = '';
   
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js");
         const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
         
-        import { firebaseConfig } from "./firebase-config.js";
+       const { firebaseConfig } = await import("./firebase-config.js");
 
         const app = initializeApp(firebaseConfig, 'pixelApp');
         const db = getFirestore(app);
@@ -875,8 +875,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, getDoc, addDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Kendi config dosyamızı dışarıdan çağırıyoruz
-    import { firebaseConfig } from "./firebase-config.js";
+const { firebaseConfig } = await import("./firebase-config.js");
 
 
 
@@ -1732,20 +1731,6 @@ let variantSelectorsHTML = '';
       }
     });
 
-// WhatsApp Yorumları için Swiper Başlatıcısı
-      new Swiper('.whatsapp-swiper', {
-          slidesPerView: 1.2, // Mobilde 1 kart tam, 2. kartın ucu gözüksün (kaydırmaya teşvik eder)
-          spaceBetween: 15,
-          centeredSlides: false,
-          loop: true,
-          autoplay: { delay: 3500, disableOnInteraction: false },
-          pagination: { el: '.whatsapp-swiper .swiper-pagination', clickable: true },
-          breakpoints: {
-              640: { slidesPerView: 2.2 },
-              768: { slidesPerView: 3 },
-              1024: { slidesPerView: 4 }
-          }
-      });
     // Ana sistemi başlat
     initSystem();
 
