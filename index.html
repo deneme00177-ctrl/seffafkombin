@@ -33,7 +33,25 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-  <script>
+  
+    <script>
+    // 1. PIXEL ANA İSKELETLERİ (SENKRON YÜKLENİR)
+    // Facebook Base Code
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    // TikTok Base Code
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=i+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+    }(window, document, 'ttq');
+
+    // 2. DİNAMİK ID ÇEKME VE BAŞLATMA İŞLEMİ
     let FB_PIXEL_ID = ''; 
     window.TT_PIXEL_ID = '';
   
@@ -42,8 +60,7 @@
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js");
         const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
         
-// Kendi config dosyamızı dışarıdan çağırıyoruz
-    import { firebaseConfig } from "./firebase-config.js";
+        import { firebaseConfig } from "./firebase-config.js";
 
         const app = initializeApp(firebaseConfig, 'pixelApp');
         const db = getFirestore(app);
@@ -51,12 +68,11 @@
         const settingsDoc = await getDoc(doc(db, "settings", "siteConfig"));
         if (settingsDoc.exists()) {
           const settings = settingsDoc.data();
-          const dynamicFbId = settings.facebookPixelId || settings['cfg-facebookPixelId'];
-          if (dynamicFbId) FB_PIXEL_ID = dynamicFbId;
-          const dynamicTtId = settings.tiktokPixelId || settings['cfg-tiktokPixelId'];
-          if (dynamicTtId) window.TT_PIXEL_ID = dynamicTtId;
+          FB_PIXEL_ID = settings.facebookPixelId || settings['cfg-facebookPixelId'];
+          window.TT_PIXEL_ID = settings.tiktokPixelId || settings['cfg-tiktokPixelId'];
         }
 
+        // ID'ler geldikten sonra Pikselleri ateşle
         if (FB_PIXEL_ID) {
           const noscriptEl = document.getElementById('fb-noscript');
           if (noscriptEl) {
@@ -65,24 +81,13 @@
             imgEl.src = `https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1`;
             noscriptEl.innerHTML = ''; noscriptEl.appendChild(imgEl);
           }
-          
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window, document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          
-          fbq('init', FB_PIXEL_ID); fbq('track', 'PageView');
+          fbq('init', FB_PIXEL_ID); 
+          fbq('track', 'PageView');
         }
 
         if (window.TT_PIXEL_ID) {
-          !function (w, d, t) {
-            w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=i+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
-          }(window, document, 'ttq');
-          ttq.load(window.TT_PIXEL_ID); ttq.page();
+          ttq.load(window.TT_PIXEL_ID); 
+          ttq.page();
         }
       } catch (error) { console.error('Pixel yüklenirken hata:', error); }
     });
@@ -549,11 +554,7 @@
             </div>
         </div>
     </section>
-	<section id="whatsapp-reviews-section" class="py-12 bg-[#efeae2] border-t border-b border-gray-200 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10" style="background-image: url('https://w0.peakpx.com/wallpaper/818/148/HD-wallpaper-whatsapp-background-solid-color-texture-whatsapp-pattern-thumbnail.jpg'); background-size: cover; mix-blend-mode: multiply;"></div>
-        
 
-    </section>
     <section id="order-section" class="py-5 px-4 md:px-10 bg-gray-50 hidden">
         <div class="max-w-7xl mx-auto">
             <div class="mb-6">
